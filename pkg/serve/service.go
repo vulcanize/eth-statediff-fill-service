@@ -17,32 +17,34 @@
 package serve
 
 import (
+	"sync"
+
+	ethnode "github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/rpc"
+	log "github.com/sirupsen/logrus"
 )
 
-const (
-	PayloadChanBufferSize = 2000
-)
-
-// Server is the top level interface for streaming, converting to IPLDs, publishing,
-// and indexing all chain data; screening this data; and serving it up to subscribed clients
-// This service is compatible with the Ethereum service interface (node.Service)
+// Server is the top level interface for exposing remote RPC API
 type Server interface {
-	// Start() and Stop()
+	ethnode.Lifecycle
 	APIs() []rpc.API
 	Protocols() []p2p.Protocol
+	Serve(wg *sync.WaitGroup)
 }
 
-// Service is the underlying struct for the watcher
+// Service is the underlying struct for the service
 type Service struct {
-	// rpc client for forwarding cache misses
-	client *rpc.Client
+	wg *sync.WaitGroup
+	// rpc client for forwarding to geth
+	client   *rpc.Client
+	quitChan chan struct{}
 }
 
 // NewServer creates a new Server using an underlying Service struct
 func NewServer(settings *Config) (Server, error) {
 	sap := new(Service)
+	sap.quitChan = make(chan struct{})
 	sap.client = settings.Client
 	return sap, nil
 }
@@ -63,4 +65,38 @@ func (sap *Service) APIs() []rpc.API {
 		},
 	}
 	return apis
+}
+
+// Serve is the listening loop
+func (sap *Service) Serve(wg *sync.WaitGroup) {
+	sap.wg = wg
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		for {
+			select {
+			case <-sap.quitChan:
+				log.Info("quiting the server process")
+				return
+			}
+		}
+	}()
+	log.Info("server process successfully spun up")
+}
+
+// Start is used to begin the service
+// This is mostly just to satisfy the node.Service interface
+func (sap *Service) Start() error {
+	log.Info("starting server")
+	wg := new(sync.WaitGroup)
+	sap.Serve(wg)
+	return nil
+}
+
+// Stop is used to close down the service
+// This is mostly just to satisfy the node.Service interface
+func (sap *Service) Stop() error {
+	log.Infof("stopping server")
+	close(sap.quitChan)
+	return nil
 }

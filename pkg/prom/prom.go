@@ -23,10 +23,9 @@ import (
 )
 
 const (
-	namespace = "ipld_eth_server"
+	namespace = "eth_statediff_fill_service"
 
 	subsystemHTTP = "http"
-	subsystemWS   = "ws"
 	subsystemIPC  = "ipc"
 )
 
@@ -35,7 +34,6 @@ var (
 
 	httpCount    prometheus.Counter
 	httpDuration prometheus.Histogram
-	wsCount      prometheus.Gauge
 	ipcCount     prometheus.Gauge
 )
 
@@ -54,13 +52,6 @@ func Init() {
 		Subsystem: subsystemHTTP,
 		Name:      "duration",
 		Help:      "http request duration",
-	})
-
-	wsCount = promauto.NewGauge(prometheus.GaugeOpts{
-		Namespace: namespace,
-		Subsystem: subsystemWS,
-		Name:      "count",
-		Help:      "websocket connection count",
 	})
 
 	ipcCount = promauto.NewGauge(prometheus.GaugeOpts{

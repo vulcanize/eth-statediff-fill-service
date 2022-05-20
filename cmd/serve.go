@@ -16,7 +16,6 @@
 package cmd
 
 import (
-	"errors"
 	"os"
 	"os/signal"
 	"sync"
@@ -31,8 +30,6 @@ import (
 	s "github.com/vulcanize/eth-statediff-fill-service/pkg/serve"
 	v "github.com/vulcanize/eth-statediff-fill-service/version"
 )
-
-var ErrNoRpcEndpoints = errors.New("no rpc endpoints is available")
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
@@ -65,6 +62,7 @@ func serve() {
 	}
 
 	logWithCommand.Info("starting up servers")
+	server.Serve(wg)
 	if err := startServers(server, serverConfig); err != nil {
 		logWithCommand.Fatal(err)
 	}
@@ -79,6 +77,7 @@ func serve() {
 	<-shutdown
 
 	watchedAddressFillService.Stop()
+	server.Stop()
 	wg.Wait()
 }
 
@@ -112,39 +111,15 @@ func init() {
 	addDatabaseFlags(serveCmd)
 
 	// flags for all config variables
-	// eth graphql and json-rpc parameters
+	// json-rpc parameters
 	serveCmd.PersistentFlags().Bool("eth-server-http", true, "turn on the eth http json-rpc server")
 	serveCmd.PersistentFlags().String("eth-server-http-path", "", "endpoint url for eth http json-rpc server (host:port)")
 	serveCmd.PersistentFlags().Bool("eth-server-ipc", false, "turn on the eth ipc json-rpc server")
 	serveCmd.PersistentFlags().String("eth-server-ipc-path", "", "path for eth ipc json-rpc server")
 
 	serveCmd.PersistentFlags().String("eth-http-path", "", "http url for ethereum node")
-	serveCmd.PersistentFlags().String("eth-node-id", "", "eth node id")
-	serveCmd.PersistentFlags().String("eth-client-name", "Geth", "eth client name")
-	serveCmd.PersistentFlags().String("eth-genesis-block", "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3", "eth genesis block hash")
-	serveCmd.PersistentFlags().String("eth-network-id", "1", "eth network id")
-	serveCmd.PersistentFlags().String("eth-chain-id", "1", "eth chain id")
-	serveCmd.PersistentFlags().String("eth-default-sender", "", "default sender address")
-	serveCmd.PersistentFlags().String("eth-rpc-gas-cap", "", "rpc gas cap (for eth_Call execution)")
-	serveCmd.PersistentFlags().String("eth-chain-config", "", "json chain config file location")
-	serveCmd.PersistentFlags().Bool("eth-supports-state-diff", false, "whether the proxy ethereum client supports statediffing endpoints")
-	serveCmd.PersistentFlags().Bool("eth-forward-eth-calls", false, "whether to immediately forward eth_calls to proxy client")
-	serveCmd.PersistentFlags().Bool("eth-proxy-on-error", true, "whether to forward all failed calls to proxy client")
-
-	// groupcache flags
-	serveCmd.PersistentFlags().Bool("gcache-pool-enabled", false, "turn on the groupcache pool")
-	serveCmd.PersistentFlags().String("gcache-pool-http-path", "", "http url for groupcache node")
-	serveCmd.PersistentFlags().StringArray("gcache-pool-http-peers", []string{}, "http urls for groupcache peers")
-	serveCmd.PersistentFlags().Int("gcache-statedb-cache-size", 16, "state DB cache size in MB")
-	serveCmd.PersistentFlags().Int("gcache-statedb-cache-expiry", 60, "state DB cache expiry time in mins")
-	serveCmd.PersistentFlags().Int("gcache-statedb-log-stats-interval", 60, "state DB cache stats log interval in secs")
-
-	// state validator flags
-	serveCmd.PersistentFlags().Bool("validator-enabled", false, "turn on the state validator")
-	serveCmd.PersistentFlags().Uint("validator-every-nth-block", 1500, "only validate every Nth block")
 
 	// watched address gap filler flags
-	serveCmd.PersistentFlags().Bool("watched-address-gap-filler-enabled", false, "turn on the watched address gap filler")
 	serveCmd.PersistentFlags().Int("watched-address-gap-filler-interval", 60, "watched address gap fill interval in secs")
 
 	// eth http json-rpc server
@@ -156,25 +131,7 @@ func init() {
 	viper.BindPFlag("eth.server.ipcPath", serveCmd.PersistentFlags().Lookup("eth-server-ipc-path"))
 
 	viper.BindPFlag("ethereum.httpPath", serveCmd.PersistentFlags().Lookup("eth-http-path"))
-	viper.BindPFlag("ethereum.nodeID", serveCmd.PersistentFlags().Lookup("eth-node-id"))
-	viper.BindPFlag("ethereum.clientName", serveCmd.PersistentFlags().Lookup("eth-client-name"))
-	viper.BindPFlag("ethereum.genesisBlock", serveCmd.PersistentFlags().Lookup("eth-genesis-block"))
-	viper.BindPFlag("ethereum.networkID", serveCmd.PersistentFlags().Lookup("eth-network-id"))
-	viper.BindPFlag("ethereum.chainID", serveCmd.PersistentFlags().Lookup("eth-chain-id"))
-
-	// groupcache flags
-	viper.BindPFlag("groupcache.pool.enabled", serveCmd.PersistentFlags().Lookup("gcache-pool-enabled"))
-	viper.BindPFlag("groupcache.pool.httpEndpoint", serveCmd.PersistentFlags().Lookup("gcache-pool-http-path"))
-	viper.BindPFlag("groupcache.pool.peerHttpEndpoints", serveCmd.PersistentFlags().Lookup("gcache-pool-http-peers"))
-	viper.BindPFlag("groupcache.statedb.cacheSizeInMB", serveCmd.PersistentFlags().Lookup("gcache-statedb-cache-size"))
-	viper.BindPFlag("groupcache.statedb.cacheExpiryInMins", serveCmd.PersistentFlags().Lookup("gcache-statedb-cache-expiry"))
-	viper.BindPFlag("groupcache.statedb.logStatsIntervalInSecs", serveCmd.PersistentFlags().Lookup("gcache-statedb-log-stats-interval"))
-
-	// state validator flags
-	viper.BindPFlag("validator.enabled", serveCmd.PersistentFlags().Lookup("validator-enabled"))
-	viper.BindPFlag("validator.everyNthBlock", serveCmd.PersistentFlags().Lookup("validator-every-nth-block"))
 
 	// watched address gap filler flags
-	viper.BindPFlag("watch.fill.enabled", serveCmd.PersistentFlags().Lookup("watched-address-gap-filler-enabled"))
 	viper.BindPFlag("watch.fill.interval", serveCmd.PersistentFlags().Lookup("watched-address-gap-filler-interval"))
 }

@@ -39,19 +39,6 @@ func HTTPMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// WSMiddleware websocket connection counter
-func WSMiddleware(next http.Handler) http.Handler {
-	if !metrics {
-		return next
-	}
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		wsCount.Inc()
-		next.ServeHTTP(w, r)
-		wsCount.Dec()
-	})
-}
-
 // IPCMiddleware unix-socket connection counter
 func IPCMiddleware(server *rpc.Server, client rpc.Conn) {
 	if metrics {

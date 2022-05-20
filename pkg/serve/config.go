@@ -18,12 +18,10 @@ package serve
 
 import (
 	"fmt"
-	"math/big"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/go-ethereum/statediff/indexer/database/sql/postgres"
 	"github.com/jmoiron/sqlx"
@@ -35,7 +33,6 @@ import (
 
 // Env variables
 const (
-	SERVER_WS_PATH   = "SERVER_WS_PATH"
 	SERVER_IPC_PATH  = "SERVER_IPC_PATH"
 	SERVER_HTTP_PATH = "SERVER_HTTP_PATH"
 
@@ -43,17 +40,6 @@ const (
 	SERVER_MAX_OPEN_CONNECTIONS = "SERVER_MAX_OPEN_CONNECTIONS"
 	SERVER_MAX_CONN_LIFETIME    = "SERVER_MAX_CONN_LIFETIME"
 
-	ETH_DEFAULT_SENDER_ADDR = "ETH_DEFAULT_SENDER_ADDR"
-	ETH_RPC_GAS_CAP         = "ETH_RPC_GAS_CAP"
-	ETH_CHAIN_CONFIG        = "ETH_CHAIN_CONFIG"
-	ETH_SUPPORTS_STATEDIFF  = "ETH_SUPPORTS_STATEDIFF"
-	ETH_FORWARD_ETH_CALLS   = "ETH_FORWARD_ETH_CALLS"
-	ETH_PROXY_ON_ERROR      = "ETH_PROXY_ON_ERROR"
-
-	VALIDATOR_ENABLED         = "VALIDATOR_ENABLED"
-	VALIDATOR_EVERY_NTH_BLOCK = "VALIDATOR_EVERY_NTH_BLOCK"
-
-	WATCHED_ADDRESS_GAP_FILLER_ENABLED  = "WATCHED_ADDRESS_GAP_FILLER_ENABLED"
 	WATCHED_ADDRESS_GAP_FILLER_INTERVAL = "WATCHED_ADDRESS_GAP_FILLER_INTERVAL"
 )
 
@@ -62,40 +48,15 @@ type Config struct {
 	DB       *sqlx.DB
 	DBConfig postgres.Config
 
-	WSEnabled  bool
-	WSEndpoint string
-
 	HTTPEnabled  bool
 	HTTPEndpoint string
 
 	IPCEnabled  bool
 	IPCEndpoint string
 
-	EthGraphqlEnabled  bool
-	EthGraphqlEndpoint string
+	Client *rpc.Client
 
-	IpldGraphqlEnabled          bool
-	IpldGraphqlEndpoint         string
-	IpldPostgraphileEndpoint    string
-	TracingHttpEndpoint         string
-	TracingPostgraphileEndpoint string
-
-	DefaultSender    *common.Address
-	RPCGasCap        *big.Int
-	EthHttpEndpoint  string
-	Client           *rpc.Client
-	SupportStateDiff bool
-	ForwardEthCalls  bool
-	ProxyOnError     bool
-
-	// Cache configuration.
-	GroupCache *ethServerShared.GroupCacheConfig
-
-	StateValidationEnabled       bool
-	StateValidationEveryNthBlock uint64
-
-	WatchedAddressGapFillerEnabled bool
-	WatchedAddressGapFillInterval  int
+	WatchedAddressGapFillInterval int
 }
 
 // NewConfig is used to initialize a watcher config from a .toml file
@@ -184,9 +145,7 @@ func (c *Config) dbInit() {
 }
 
 func (c *Config) loadWatchedAddressGapFillerConfig() {
-	viper.BindEnv("watch.fill.enabled", WATCHED_ADDRESS_GAP_FILLER_ENABLED)
 	viper.BindEnv("watch.fill.interval", WATCHED_ADDRESS_GAP_FILLER_INTERVAL)
 
-	c.WatchedAddressGapFillerEnabled = viper.GetBool("watch.fill.enabled")
 	c.WatchedAddressGapFillInterval = viper.GetInt("watch.fill.interval")
 }
