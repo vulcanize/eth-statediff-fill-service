@@ -2,8 +2,6 @@ package serve
 
 import (
 	"github.com/ethereum/go-ethereum/rpc"
-	"github.com/ethereum/go-ethereum/statediff/indexer/node"
-	"github.com/spf13/viper"
 )
 
 // Env variables
@@ -29,22 +27,11 @@ const (
 )
 
 // GetEthNodeAndClient returns eth node info and client from path url
-func getEthNodeAndClient(path string) (node.Info, *rpc.Client, error) {
-	viper.BindEnv("ethereum.nodeID", ETH_NODE_ID)
-	viper.BindEnv("ethereum.clientName", ETH_CLIENT_NAME)
-	viper.BindEnv("ethereum.genesisBlock", ETH_GENESIS_BLOCK)
-	viper.BindEnv("ethereum.networkID", ETH_NETWORK_ID)
-	viper.BindEnv("ethereum.chainID", ETH_CHAIN_ID)
-
+func getEthClient(path string) (*rpc.Client, error) {
 	rpcClient, err := rpc.Dial(path)
 	if err != nil {
-		return node.Info{}, nil, err
+		return nil, err
 	}
-	return node.Info{
-		ID:           viper.GetString("ethereum.nodeID"),
-		ClientName:   viper.GetString("ethereum.clientName"),
-		GenesisBlock: viper.GetString("ethereum.genesisBlock"),
-		NetworkID:    viper.GetString("ethereum.networkID"),
-		ChainID:      viper.GetUint64("ethereum.chainID"),
-	}, rpcClient, nil
+
+	return rpcClient, nil
 }
