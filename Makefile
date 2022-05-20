@@ -4,12 +4,12 @@ BIN = $(GOPATH)/bin
 ## Testing library
 GINKGO = $(BIN)/ginkgo
 $(BIN)/ginkgo:
-	go get github.com/onsi/ginkgo/ginkgo
+	go get -u github.com/onsi/ginkgo/ginkgo
 
 ## Migration tool
 GOOSE = $(BIN)/goose
 $(BIN)/goose:
-	go get github.com/pressly/goose/cmd/goose
+	go get -u github.com/pressly/goose/cmd/goose
 
 .PHONY: installtools
 installtools: | $(LINT) $(GOOSE) $(GINKGO)
@@ -30,3 +30,8 @@ integrationtest: | $(GINKGO) $(GOOSE)
 build:
 	go fmt ./...
 	GO111MODULE=on go build
+
+## Build docker image
+.PHONY: docker-build
+docker-build:
+	docker build -t vulcanize/eth-statediff-fill-service .

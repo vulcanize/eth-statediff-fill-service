@@ -66,7 +66,7 @@ func (s *Service) Start(wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-s.quitChan:
-			log.Info("quiting eth ipld server process")
+			log.Info("quiting server process")
 			return
 		default:
 			s.fill()
@@ -191,7 +191,7 @@ func (s *Service) fetchWatchedAddresses() []WatchedAddress {
 
 	err := s.db.Select(&rows, pgStr)
 	if err != nil {
-		log.Fatalf("Error fetching watched addreesses: %s", err.Error())
+		log.Fatalf("Error fetching watched addresses: %s", err.Error())
 	}
 
 	return rows

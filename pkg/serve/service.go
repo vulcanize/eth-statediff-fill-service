@@ -76,7 +76,7 @@ func (sap *Service) Serve(wg *sync.WaitGroup) {
 		for {
 			select {
 			case <-sap.quitChan:
-				log.Info("quiting the server process")
+				log.Info("quitting the server process")
 				return
 			}
 		}

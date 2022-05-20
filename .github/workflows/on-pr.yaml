@@ -36,9 +36,9 @@ jobs:
   integrationtest:
     name: Run integration tests
     env:
-      STACK_ORCHESTRATOR_REF: 0f4b58624ee7fc049ae25aeacced476ee9a4ca71
+      STACK_ORCHESTRATOR_REF: 6b4a63e3415ce3d6e5cdabdbb77e2806e93477ef
       GO_ETHEREUM_REF: ef8c9f2580dd577a7c5eca538fb0ed64d53dc4a4
-      IPLD_ETH_SERVER_REF: 6ae522ec5d558b221cfa29eb07b1fb38e624bf0e
+      IPLD_ETH_SERVER_REF: 037131528c761cbddb3e315ac9ba08e6e415e860
       GOPATH: /tmp/go
       DB_WRITE: true
       ETH_FORWARD_ETH_CALLS: false
@@ -79,12 +79,13 @@ jobs:
         run: |
           echo vulcanize_go_ethereum=$GITHUB_WORKSPACE/go-ethereum/ > ./config.sh
           echo vulcanize_ipld_eth_server=$GITHUB_WORKSPACE/ipld-eth-server/ >> ./config.sh
+          echo vulcanize_test_contract=$GITHUB_WORKSPACE/ipld-eth-server/test/contract/ >> ./config.sh
           echo vulcanize_eth_statediff_fill_service=$GITHUB_WORKSPACE/eth-statediff-fill-service/ >> ./config.sh
           echo db_write=$DB_WRITE >> ./config.sh
           echo eth_forward_eth_calls=$ETH_FORWARD_ETH_CALLS >> ./config.sh
           echo eth_proxy_on_error=$ETH_PROXY_ON_ERROR >> ./config.sh
           echo eth_http_path=$ETH_HTTP_PATH >> ./config.sh
-          echo watched_addres_gap_filler_interval=$WATCHED_ADDRESS_GAP_FILLER_INTERVAL >> ./config.sh
+          echo watched_address_gap_filler_interval=$WATCHED_ADDRESS_GAP_FILLER_INTERVAL >> ./config.sh
           cat ./config.sh
       - name: Build geth
         run: |
@@ -98,6 +99,7 @@ jobs:
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/latest/docker-compose-db.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-go-ethereum.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-ipld-eth-server.yml" \
+          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-contract.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-eth-statediff-fill-service.yml" \
           --env-file "$GITHUB_WORKSPACE/config.sh" \
           up -d --build
