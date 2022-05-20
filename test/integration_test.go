@@ -33,7 +33,9 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 	ipldEthHttpPath := "http://127.0.0.1:8081"
 	ipldClient, err := ethclient.Dial(ipldEthHttpPath)
 	Expect(err).ToNot(HaveOccurred())
-	ipldRPCClient, err := rpc.Dial(ipldEthHttpPath)
+
+	fillServiceHttpPath := "http://127.0.0.1:8082"
+	fillServiceRPCClient, err := rpc.Dial(fillServiceHttpPath)
 	Expect(err).ToNot(HaveOccurred())
 
 	var (
@@ -79,7 +81,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 				CreatedAt: uint64(GLD1.BlockNumber),
 			},
 		}
-		ipldErr := ipldRPCClient.Call(nil, ipldMethod, operation, args)
+		ipldErr := fillServiceRPCClient.Call(nil, ipldMethod, operation, args)
 		Expect(ipldErr).ToNot(HaveOccurred())
 
 		// Deploy two SLV contracts and update storage slots
@@ -147,7 +149,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 					CreatedAt: uint64(SLV1.BlockNumber),
 				},
 			}
-			ipldErr := ipldRPCClient.Call(nil, ipldMethod, types.Add, args)
+			ipldErr := fillServiceRPCClient.Call(nil, ipldMethod, types.Add, args)
 			Expect(ipldErr).ToNot(HaveOccurred())
 
 			// Sleep for service interval + few extra seconds
@@ -183,7 +185,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 					CreatedAt: uint64(SLV2CountBIncrementedAt.BlockNumber),
 				},
 			}
-			ipldErr := ipldRPCClient.Call(nil, ipldMethod, types.Add, args)
+			ipldErr := fillServiceRPCClient.Call(nil, ipldMethod, types.Add, args)
 			Expect(ipldErr).ToNot(HaveOccurred())
 
 			// Sleep for service interval + few extra seconds
@@ -211,7 +213,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 					CreatedAt: uint64(SLV2CountBIncrementedAt.BlockNumber),
 				},
 			}
-			ipldErr := ipldRPCClient.Call(nil, ipldMethod, types.Remove, args)
+			ipldErr := fillServiceRPCClient.Call(nil, ipldMethod, types.Remove, args)
 			Expect(ipldErr).ToNot(HaveOccurred())
 
 			// Watch SLV2 (created_at -> deployment) contract
@@ -221,7 +223,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 					CreatedAt: uint64(SLV2.BlockNumber),
 				},
 			}
-			ipldErr = ipldRPCClient.Call(nil, ipldMethod, types.Add, args)
+			ipldErr = fillServiceRPCClient.Call(nil, ipldMethod, types.Add, args)
 			Expect(ipldErr).ToNot(HaveOccurred())
 
 			// Sleep for service interval + few extra seconds
@@ -256,7 +258,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 					CreatedAt: uint64(SLV1.BlockNumber),
 				},
 			}
-			ipldErr := ipldRPCClient.Call(nil, ipldMethod, operation, args)
+			ipldErr := fillServiceRPCClient.Call(nil, ipldMethod, operation, args)
 			Expect(ipldErr).ToNot(HaveOccurred())
 
 			// WatchedAddresses = [GLD1, SLV2]
@@ -281,7 +283,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 					CreatedAt: uint64(SLV1.BlockNumber),
 				},
 			}
-			ipldErr := ipldRPCClient.Call(nil, ipldMethod, operation, args)
+			ipldErr := fillServiceRPCClient.Call(nil, ipldMethod, operation, args)
 			Expect(ipldErr).ToNot(HaveOccurred())
 
 			// Sleep for service interval + few extra seconds
