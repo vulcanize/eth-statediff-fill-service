@@ -19,7 +19,7 @@
 - Checkout working commit in stack-orchestrator repo.
   ```bash
   # In stack-orchestrator repo.
-  git checkout 7884d340c299021744541ca08f0b56bcc43ccfde
+  git checkout e154fa18452079e1a537e01b79056846a9620db3
   ```
 
 ## Run

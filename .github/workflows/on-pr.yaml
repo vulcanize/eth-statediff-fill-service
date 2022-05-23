@@ -36,7 +36,7 @@ jobs:
   integrationtest:
     name: Run integration tests
     env:
-      STACK_ORCHESTRATOR_REF: 7884d340c299021744541ca08f0b56bcc43ccfde
+      STACK_ORCHESTRATOR_REF: e154fa18452079e1a537e01b79056846a9620db3
       GO_ETHEREUM_REF: 17d272d837e49eecfdfe970a02b2bb64f77cdced
       IPLD_ETH_SERVER_REF: c25d220f716914802c11d5fd7c12ca37a3ce548d
       GOPATH: /tmp/go
