@@ -95,7 +95,7 @@ func NewConfig() (*Config, error) {
 	if httpEnabled {
 		httpPath := viper.GetString("eth.server.httpPath")
 		if httpPath == "" {
-			httpPath = "127.0.0.1:8081"
+			httpPath = "127.0.0.1:8085"
 		}
 		c.HTTPEndpoint = httpPath
 	}

@@ -34,7 +34,7 @@ var _ = Describe("Watched address gap filling service integration test", func() 
 	ipldClient, err := ethclient.Dial(ipldEthHttpPath)
 	Expect(err).ToNot(HaveOccurred())
 
-	fillServiceHttpPath := "http://127.0.0.1:8082"
+	fillServiceHttpPath := "http://127.0.0.1:8085"
 	fillServiceRPCClient, err := rpc.Dial(fillServiceHttpPath)
 	Expect(err).ToNot(HaveOccurred())
 

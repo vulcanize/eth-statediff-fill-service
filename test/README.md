@@ -1,4 +1,4 @@
-# Test Insructions
+# Test Instructions
 
 ## Setup
 
@@ -19,7 +19,7 @@
 - Checkout working commit in stack-orchestrator repo.
   ```bash
   # In stack-orchestrator repo.
-  git checkout 6b4a63e3415ce3d6e5cdabdbb77e2806e93477ef
+  git checkout 42af57a2963bb6ca55fb5fcb16ed75b39fae60f9
   ```
 
 ## Run

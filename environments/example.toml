@@ -10,7 +10,7 @@
 
 [server]
     ipcPath = "~/.vulcanize/vulcanize.ipc" # $SERVER_IPC_PATH
-    httpPath = "127.0.0.1:8082" # $SERVER_HTTP_PATH
+    httpPath = "127.0.0.1:8085" # $SERVER_HTTP_PATH
 
 [ethereum]
     httpPath = "127.0.0.1:8545" # $ETH_HTTP_PATH
