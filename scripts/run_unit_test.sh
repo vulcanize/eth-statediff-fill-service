@@ -6,8 +6,7 @@ set -e
 docker-compose down --remove-orphans --volumes
 
 # Spin up TimescaleDB
-docker-compose -f docker-compose.yml up -d migrations ipld-eth-db
-# sleep 45
+docker-compose -f docker-compose.yml up -d ipld-eth-db
 sleep 10
 
 # Run unit tests
