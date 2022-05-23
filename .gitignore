@@ -1,0 +1,7 @@
+.idea
+.vscode
+
+environments/*.toml
+!environments/example.toml
+
+eth-statediff-fill-service

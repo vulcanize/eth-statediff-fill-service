@@ -1,0 +1,20 @@
+[database]
+    name     = "vulcanize_public" # $DATABASE_NAME
+    hostname = "localhost" # $DATABASE_HOSTNAME
+    port     = 5432 # $DATABASE_PORT
+    user     = "postgres" # $DATABASE_USER
+    password = "" # $DATABASE_PASSWORD
+
+[log]
+    level = "info" # $LOGRUS_LEVEL
+
+[server]
+    ipcPath = "~/.vulcanize/vulcanize.ipc" # $SERVER_IPC_PATH
+    httpPath = "127.0.0.1:8085" # $SERVER_HTTP_PATH
+
+[ethereum]
+    httpPath = "127.0.0.1:8545" # $ETH_HTTP_PATH
+
+[watch]
+    [watch.fill]
+        interval = 30
