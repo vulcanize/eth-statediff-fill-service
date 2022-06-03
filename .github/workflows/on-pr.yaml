@@ -1,4 +1,7 @@
 name: Docker Build
+env:
+  STACK_ORCHESTRATOR_REF: 00ab32bd64661459ca944288923a59410c0886d7
+  IPLD_ETH_DB_REF: 91d30b9ea1acecd0a7f4307390a98bf3e289b8d7
 
 on: [pull_request]
 jobs:
@@ -14,49 +17,62 @@ jobs:
     name: Run unit tests
     env:
       GOPATH: /tmp/go
-    strategy:
-     matrix:
-       go-version: [1.16.x]
     runs-on: ubuntu-latest
     steps:
       - name: Create GOPATH
         run: mkdir -p /tmp/go
-      - name: Install Go
-        uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ">=1.18.0"
+          check-latest: true
       - uses: actions/checkout@v2
-      - name: Run database
-        run: docker-compose up -d ipld-eth-db
+        with:
+          path: "./eth-statediff-fill-service"
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.IPLD_ETH_DB_REF }}
+          repository: vulcanize/ipld-eth-db
+          path: "./ipld-eth-db/"
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.STACK_ORCHESTRATOR_REF }}
+          path: "./stack-orchestrator/"
+          repository: vulcanize/stack-orchestrator
+      - name: Create config file
+        run: |
+          echo vulcanize_ipld_eth_db=$GITHUB_WORKSPACE/ipld-eth-db/ >> ./config.sh
+          cat ./config.sh
+      - name: Run docker compose
+        run: |
+          docker-compose  \
+          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-db-migration.yml" \
+          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/latest/docker-compose-timescale-db.yml" \
+          --env-file "$GITHUB_WORKSPACE/config.sh" \
+          up -d --build
       - name: Test
         run: |
           sleep 10
-          PGPASSWORD=password DATABASE_USER=vdbm DATABASE_PORT=8077 DATABASE_PASSWORD=password DATABASE_HOSTNAME=127.0.0.1 DATABASE_NAME=vulcanize_testing make test
+          PGPASSWORD=password DATABASE_USER=vdbm DATABASE_PORT=8066 DATABASE_PASSWORD=password DATABASE_HOSTNAME=127.0.0.1 DATABASE_NAME=vulcanize_testing_v4 make test
 
   integrationtest:
     name: Run integration tests
     env:
-      STACK_ORCHESTRATOR_REF: 42af57a2963bb6ca55fb5fcb16ed75b39fae60f9
-      GO_ETHEREUM_REF: ef8c9f2580dd577a7c5eca538fb0ed64d53dc4a4
-      IPLD_ETH_SERVER_REF: 037131528c761cbddb3e315ac9ba08e6e415e860
+      GO_ETHEREUM_REF: "v1.10.18-statediff-4.0.2-alpha"
+      IPLD_ETH_SERVER_REF: "v4.0.2-alpha"
       GOPATH: /tmp/go
       DB_WRITE: true
       ETH_FORWARD_ETH_CALLS: false
       ETH_PROXY_ON_ERROR: false
       ETH_HTTP_PATH: "go-ethereum:8545"
       WATCHED_ADDRESS_GAP_FILLER_INTERVAL: 5
-    strategy:
-      matrix:
-        go-version: [1.16.x]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Create GOPATH
         run: mkdir -p /tmp/go
-      - name: Install Go
-        uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ">=1.18.0"
+          check-latest: true
       - uses: actions/checkout@v2
         with:
           path: "./eth-statediff-fill-service"
@@ -72,6 +88,11 @@ jobs:
           path: "./go-ethereum/"
       - uses: actions/checkout@v2
         with:
+          ref: ${{ env.IPLD_ETH_DB_REF }}
+          repository: vulcanize/ipld-eth-db
+          path: "./ipld-eth-db/"
+      - uses: actions/checkout@v2
+        with:
           ref: ${{ env.IPLD_ETH_SERVER_REF }}
           repository: vulcanize/ipld-eth-server
           path: "./ipld-eth-server/"
@@ -81,11 +102,15 @@ jobs:
           echo vulcanize_ipld_eth_server=$GITHUB_WORKSPACE/ipld-eth-server/ >> ./config.sh
           echo vulcanize_test_contract=$GITHUB_WORKSPACE/ipld-eth-server/test/contract/ >> ./config.sh
           echo vulcanize_eth_statediff_fill_service=$GITHUB_WORKSPACE/eth-statediff-fill-service/ >> ./config.sh
+          echo vulcanize_ipld_eth_db=$GITHUB_WORKSPACE/ipld-eth-db/ >> ./config.sh
           echo db_write=$DB_WRITE >> ./config.sh
           echo eth_forward_eth_calls=$ETH_FORWARD_ETH_CALLS >> ./config.sh
           echo eth_proxy_on_error=$ETH_PROXY_ON_ERROR >> ./config.sh
           echo eth_http_path=$ETH_HTTP_PATH >> ./config.sh
           echo watched_address_gap_filler_interval=$WATCHED_ADDRESS_GAP_FILLER_INTERVAL >> ./config.sh
+          echo ipld_eth_server_db_dependency=access-node >> ./config.sh
+          echo go_ethereum_db_dependency=access-node >> ./config.sh
+          echo connecting_db_name=vulcanize_testing_v4 >> ./config.sh
           cat ./config.sh
       - name: Build geth
         run: |
@@ -96,10 +121,11 @@ jobs:
       - name: Run docker compose
         run: |
           docker-compose  \
-          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/latest/docker-compose-db.yml" \
+          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-db-migration.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-go-ethereum.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-ipld-eth-server.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-contract.yml" \
+          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/latest/docker-compose-timescale-db.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-eth-statediff-fill-service.yml" \
           --env-file "$GITHUB_WORKSPACE/config.sh" \
           up -d --build
