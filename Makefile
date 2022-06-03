@@ -1,10 +1,6 @@
 BIN = $(GOPATH)/bin
 
 # Tools
-## Testing library
-GINKGO = $(BIN)/ginkgo
-$(BIN)/ginkgo:
-	go get -u github.com/onsi/ginkgo/ginkgo
 
 ## Migration tool
 GOOSE = $(BIN)/goose
@@ -12,20 +8,20 @@ $(BIN)/goose:
 	go get -u github.com/pressly/goose/cmd/goose
 
 .PHONY: installtools
-installtools: | $(LINT) $(GOOSE) $(GINKGO)
+installtools: | $(LINT) $(GOOSE)
 	echo "Installing tools"
 
 .PHONY: test
-test: | $(GINKGO) $(GOOSE)
+test: | $(GOOSE)
 	go vet ./...
 	go fmt ./...
-	$(GINKGO) -r --skipPackage=test
+	go run github.com/onsi/ginkgo/ginkgo  -r --skipPackage=test
 
 .PHONY: integrationtest
-integrationtest: | $(GINKGO) $(GOOSE)
+integrationtest: | $(GOOSE)
 	go vet ./...
 	go fmt ./...
-	$(GINKGO) -r test/ -v
+	go run github.com/onsi/ginkgo/ginkgo  -r test/ -v
 
 build:
 	go fmt ./...
