@@ -1,6 +1,6 @@
 name: Docker Build
 env:
-  STACK_ORCHESTRATOR_REF: 00ab32bd64661459ca944288923a59410c0886d7
+  STACK_ORCHESTRATOR_REF: e3f90493fb1a49394ec6384d4501ac1e88edf988
   IPLD_ETH_DB_REF: 91d30b9ea1acecd0a7f4307390a98bf3e289b8d7
 
 on: [pull_request]
@@ -111,6 +111,7 @@ jobs:
           echo watched_address_gap_filler_interval=$WATCHED_ADDRESS_GAP_FILLER_INTERVAL >> ./config.sh
           echo ipld_eth_server_db_dependency=access-node >> ./config.sh
           echo go_ethereum_db_dependency=access-node >> ./config.sh
+          echo statediff_fill_db_dependency=access-node >> ./config.sh
           echo connecting_db_name=vulcanize_testing_v4 >> ./config.sh
           cat ./config.sh
       - name: Build geth
