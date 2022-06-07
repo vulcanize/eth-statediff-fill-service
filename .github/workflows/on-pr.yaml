@@ -36,7 +36,6 @@ jobs:
         run: |
           docker-compose  \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/latest/docker-compose-db.yml" \
-          --env-file "$GITHUB_WORKSPACE/config.sh" \
           up -d --build
       - name: Test
         run: |
