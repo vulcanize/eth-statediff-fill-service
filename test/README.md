@@ -4,22 +4,22 @@
 
 - Clone [stack-orchestrator](https://github.com/vulcanize/stack-orchestrator), [go-ethereum](https://github.com/vulcanize/go-ethereum) and [ipld-eth-server](https://github.com/vulcanize/ipld-eth-server) repositories.
 
-- Checkout [v3 release](https://github.com/vulcanize/go-ethereum/releases/tag/v1.10.17-statediff-3.2.1) in go-ethereum repo.
+- Checkout [v3 release](https://github.com/vulcanize/go-ethereum/releases/tag/v1.10.18-statediff-3.2.2) in go-ethereum repo.
   ```bash
   # In go-ethereum repo.
-  git checkout v1.10.17-statediff-3.2.1
+  git checkout v1.10.18-statediff-3.2.2
   ```
 
-- Checkout [v3 release](https://github.com/vulcanize/ipld-eth-server/tree/v3.2.0 ) in ipld-eth-server repo.
+- Checkout [v3 release](https://github.com/vulcanize/ipld-eth-server/releases/tag/v3.2.1) in ipld-eth-server repo.
   ```bash
   # In ipld-eth-server repo.
-  git checkout v3.2.0
+  git checkout v3.2.1
   ```
 
 - Checkout working commit in stack-orchestrator repo.
   ```bash
   # In stack-orchestrator repo.
-  git checkout e154fa18452079e1a537e01b79056846a9620db3
+  git checkout e10025903ee8f2e7379cb89724f8f5b9f4dccc7b
   ```
 
 ## Run
