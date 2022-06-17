@@ -1,7 +1,9 @@
 name: Docker Build
 env:
-  STACK_ORCHESTRATOR_REF: e3f90493fb1a49394ec6384d4501ac1e88edf988
-  IPLD_ETH_DB_REF: 91d30b9ea1acecd0a7f4307390a98bf3e289b8d7
+  STACK_ORCHESTRATOR_REF: "b3cb26e93b7e387d96417c81f880a3b8699b67db"
+  IPLD_ETH_DB_REF: "48eb594ea95763bda8e51590f105f7a2657ac6d4"
+  GO_ETHEREUM_REF: "v1.10.19-statediff-4.0.2-alpha" # Use the tag, we are going to download the bin not build it.
+  IPLD_ETH_SERVER_REF: "a63640933e875477fa6b3b4db2db278b0064aabe"
 
 on: [pull_request]
 jobs:
@@ -45,21 +47,18 @@ jobs:
       - name: Run docker compose
         run: |
           docker-compose  \
-          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-db-migration.yml" \
-          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/latest/docker-compose-timescale-db.yml" \
+          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-db-sharding.yml" \
           --env-file "$GITHUB_WORKSPACE/config.sh" \
           up -d --build
       - name: Test
         run: |
           sleep 10
           cd $GITHUB_WORKSPACE/eth-statediff-fill-service
-          PGPASSWORD=password DATABASE_USER=vdbm DATABASE_PORT=8066 DATABASE_PASSWORD=password DATABASE_HOSTNAME=127.0.0.1 DATABASE_NAME=vulcanize_testing_v4 make test
+          PGPASSWORD=password DATABASE_USER=vdbm DATABASE_PORT=8077 DATABASE_PASSWORD=password DATABASE_HOSTNAME=127.0.0.1 DATABASE_NAME=vulcanize_testing make test
 
   integrationtest:
     name: Run integration tests
     env:
-      GO_ETHEREUM_REF: "v1.10.18-statediff-4.0.2-alpha"
-      IPLD_ETH_SERVER_REF: "v4.0.2-alpha"
       GOPATH: /tmp/go
       DB_WRITE: true
       ETH_FORWARD_ETH_CALLS: false
@@ -84,11 +83,6 @@ jobs:
           repository: vulcanize/stack-orchestrator
       - uses: actions/checkout@v2
         with:
-          ref: ${{ env.GO_ETHEREUM_REF }}
-          repository: vulcanize/go-ethereum
-          path: "./go-ethereum/"
-      - uses: actions/checkout@v2
-        with:
           ref: ${{ env.IPLD_ETH_DB_REF }}
           repository: vulcanize/ipld-eth-db
           path: "./ipld-eth-db/"
@@ -99,7 +93,6 @@ jobs:
           path: "./ipld-eth-server/"
       - name: Create config file
         run: |
-          echo vulcanize_go_ethereum=$GITHUB_WORKSPACE/go-ethereum/ > ./config.sh
           echo vulcanize_ipld_eth_server=$GITHUB_WORKSPACE/ipld-eth-server/ >> ./config.sh
           echo vulcanize_test_contract=$GITHUB_WORKSPACE/ipld-eth-server/test/contract/ >> ./config.sh
           echo vulcanize_eth_statediff_fill_service=$GITHUB_WORKSPACE/eth-statediff-fill-service/ >> ./config.sh
@@ -109,25 +102,18 @@ jobs:
           echo eth_proxy_on_error=$ETH_PROXY_ON_ERROR >> ./config.sh
           echo eth_http_path=$ETH_HTTP_PATH >> ./config.sh
           echo watched_address_gap_filler_interval=$WATCHED_ADDRESS_GAP_FILLER_INTERVAL >> ./config.sh
-          echo ipld_eth_server_db_dependency=access-node >> ./config.sh
-          echo go_ethereum_db_dependency=access-node >> ./config.sh
-          echo statediff_fill_db_dependency=access-node >> ./config.sh
-          echo connecting_db_name=vulcanize_testing_v4 >> ./config.sh
           cat ./config.sh
-      - name: Build geth
+      - name: Download Geth geth
         run: |
           cd $GITHUB_WORKSPACE/stack-orchestrator/helper-scripts
-          ./compile-geth.sh \
-          -p "$GITHUB_WORKSPACE/config.sh" \
-          -e docker
+          wget https://github.com/vulcanize/go-ethereum/releases/download/${{env.GO_ETHEREUM_REF}}/geth-linux-amd64
       - name: Run docker compose
         run: |
           docker-compose  \
-          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-db-migration.yml" \
+          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-db-sharding.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-go-ethereum.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-ipld-eth-server.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-contract.yml" \
-          -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/latest/docker-compose-timescale-db.yml" \
           -f "$GITHUB_WORKSPACE/stack-orchestrator/docker/local/docker-compose-eth-statediff-fill-service.yml" \
           --env-file "$GITHUB_WORKSPACE/config.sh" \
           up -d --build
