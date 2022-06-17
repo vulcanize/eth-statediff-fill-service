@@ -2,7 +2,8 @@ name: Docker Build
 env:
   STACK_ORCHESTRATOR_REF: "b3cb26e93b7e387d96417c81f880a3b8699b67db"
   IPLD_ETH_DB_REF: "48eb594ea95763bda8e51590f105f7a2657ac6d4"
-  GO_ETHEREUM_REF: "d629c99d84cb8d20b89e46c1d9f852c7409829f2"
+  GO_ETHEREUM_REF: "v1.10.19-statediff-4.0.2-alpha" # Use the tag, we are going to download the bin not build it.
+  IPLD_ETH_SERVER_REF: "a63640933e875477fa6b3b4db2db278b0064aabe"
 
 on: [pull_request]
 jobs:
@@ -82,11 +83,6 @@ jobs:
           repository: vulcanize/stack-orchestrator
       - uses: actions/checkout@v2
         with:
-          ref: ${{ env.GO_ETHEREUM_REF }}
-          repository: vulcanize/go-ethereum
-          path: "./go-ethereum/"
-      - uses: actions/checkout@v2
-        with:
           ref: ${{ env.IPLD_ETH_DB_REF }}
           repository: vulcanize/ipld-eth-db
           path: "./ipld-eth-db/"
@@ -97,7 +93,6 @@ jobs:
           path: "./ipld-eth-server/"
       - name: Create config file
         run: |
-          echo vulcanize_go_ethereum=$GITHUB_WORKSPACE/go-ethereum/ > ./config.sh
           echo vulcanize_ipld_eth_server=$GITHUB_WORKSPACE/ipld-eth-server/ >> ./config.sh
           echo vulcanize_test_contract=$GITHUB_WORKSPACE/ipld-eth-server/test/contract/ >> ./config.sh
           echo vulcanize_eth_statediff_fill_service=$GITHUB_WORKSPACE/eth-statediff-fill-service/ >> ./config.sh
@@ -108,12 +103,10 @@ jobs:
           echo eth_http_path=$ETH_HTTP_PATH >> ./config.sh
           echo watched_address_gap_filler_interval=$WATCHED_ADDRESS_GAP_FILLER_INTERVAL >> ./config.sh
           cat ./config.sh
-      - name: Build geth
+      - name: Download Geth geth
         run: |
           cd $GITHUB_WORKSPACE/stack-orchestrator/helper-scripts
-          ./compile-geth.sh \
-          -p "$GITHUB_WORKSPACE/config.sh" \
-          -e docker
+          wget https://github.com/vulcanize/go-ethereum/releases/download/${{env.GO_ETHEREUM_REF}}/geth-linux-amd64
       - name: Run docker compose
         run: |
           docker-compose  \
