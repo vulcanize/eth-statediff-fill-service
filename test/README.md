@@ -2,24 +2,30 @@
 
 ## Setup
 
-- Clone [stack-orchestrator](https://github.com/vulcanize/stack-orchestrator), [go-ethereum](https://github.com/vulcanize/go-ethereum) and [ipld-eth-server](https://github.com/vulcanize/ipld-eth-server) repositories.
+- Clone [stack-orchestrator](https://github.com/vulcanize/stack-orchestrator), [ipld-eth-db](https://github.com/vulcanize/ipld-eth-db), [go-ethereum](https://github.com/vulcanize/go-ethereum) and [ipld-eth-server](https://github.com/vulcanize/ipld-eth-server) repositories.
 
-- Checkout [v4 release](https://github.com/vulcanize/go-ethereum/releases/tag/v1.10.17-statediff-4.0.1-alpha) in go-ethereum repo.
+- Checkout [v4 release](https://github.com/vulcanize/ipld-eth-db/releases/tag/v4.2.1-alpha) in `ipld-eth-db` repo.
+  ```bash
+  # In ipld-eth-db repo.
+  git checkout v4.2.1-alpha
+  ```
+
+- Checkout [v4 release](https://github.com/vulcanize/go-ethereum/releases/tag/v1.10.20-statediff-4.1.0-alpha) in `go-ethereum` repo.
   ```bash
   # In go-ethereum repo.
-  git checkout v1.10.17-statediff-4.0.1-alpha
+  git checkout v1.10.20-statediff-v4.1.3-alpha
   ```
 
-- Checkout [v4 release](https://github.com/vulcanize/ipld-eth-server/tree/v4.0.0-alpha) in ipld-eth-server repo.
+- Checkout [v4 release](https://github.com/vulcanize/ipld-eth-server/tree/v4.1.3-alpha) in `ipld-eth-server` repo.
   ```bash
   # In ipld-eth-server repo.
-  git checkout v4.0.0-alpha
+  git checkout v4.1.3-alpha
   ```
 
-- Checkout working commit in stack-orchestrator repo.
+- Checkout working commit in `stack-orchestrator` repo.
   ```bash
   # In stack-orchestrator repo.
-  git checkout 42af57a2963bb6ca55fb5fcb16ed75b39fae60f9
+  git checkout f2fd766f5400fcb9eb47b50675d2e3b1f2753702
   ```
 
 ## Run
@@ -68,7 +74,7 @@
 
     ./wrapper.sh \
     -e docker \
-    -d ../docker/latest/docker-compose-db.yml \
+    -d ../docker/local/docker-compose-db-sharding.yml \
     -d ../docker/local/docker-compose-go-ethereum.yml \
     -d ../docker/local/docker-compose-ipld-eth-server.yml \
     -d ../docker/local/docker-compose-contract.yml \
